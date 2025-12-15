@@ -1,59 +1,76 @@
 #include <SoftwareSerial.h>
-SoftwareSerial mySerial(10, 11); // RX, TX (azul, naranja)
+SoftwareSerial mySerial(10, 11); // RX, TX
 
-const int led1 = 8;   // LED verde
-const int led2 = 5;   // LED rojo
-const int led3 = 2;   // LED azul
-const int buzth = 5;  // buzzer th 
-const int buzcom = 2; // buzzer com
+const int led1 = 8;  // Verde: OK
+const int led2 = 7;  // Rojo: error sensores
+const int led3 = 6;  // Amarillo: error de comunicación
+const int led4 = 5;  // Azul: modo parada
+const int buzz = 2;  // Buzzer
 
-const unsigned long tiempmax = 5000; // 5 segundos
-unsigned long ultimoDato = 0;        
+const unsigned long tiempomax = 5000;
+unsigned long ultimoDato = 0;
+
 void setup() {
   Serial.begin(9600);
-  Serial.println("Empezamos");
   mySerial.begin(9600);
 
   pinMode(led1, OUTPUT);
   pinMode(led2, OUTPUT);
   pinMode(led3, OUTPUT);
-  pinMode(buzth, OUTPUT);
-  pinMode(buzcom, OUTPUT);
+  pinMode(led4, OUTPUT);
+  pinMode(buzz, OUTPUT);
 
-  ultimoDato = millis(); // Inicia el temporizador
+  digitalWrite(led1, LOW);
+  digitalWrite(led2, LOW);
+  digitalWrite(led3, LOW);
+  digitalWrite(led4, LOW);
+  digitalWrite(buzz, LOW);
+
+  Serial.println("Estación intermedia lista");
+  ultimoDato = millis();
 }
 
 void loop() {
-  digitalWrite(led1, LOW);
+  // --- Enviar comandos del PC al emisor ---
+  if (Serial.available()) {
+    String comando = Serial.readStringUntil('\n');
+    comando.trim();
+    mySerial.println(comando);
+  }
 
-  
+  // --- Recibir datos del emisor ---
   if (mySerial.available()) {
-    String data = mySerial.readString();
-    Serial.print(data);
-    ultimoDato = millis();  
+    String data = mySerial.readStringUntil('\n');
+    data.trim();
+    Serial.println(data);
+    ultimoDato = millis();
 
-    // Si el dato es "Error "
-    if (data == "Error ") {
-      tone(buzth, 1500);
-      delay(500);
+    if (data.startsWith("3")) { // error sensor
+      tone(buzz, 1500);
       digitalWrite(led2, HIGH);
       delay(1000);
       digitalWrite(led2, LOW);
-      noTone(buzth);
-    } else {
-      noTone(buzth);
+      noTone(buzz);
+    } 
+    else if (data.startsWith("4")) { // parada
+      digitalWrite(led4, HIGH);
+      delay(1000);
+      digitalWrite(led4, LOW);
+    } 
+    else if(data.startsWith("1:")) {
       digitalWrite(led1, HIGH);
       delay(1000);
+      digitalWrite(led1, LOW);
     }
   }
 
-  
-  if (millis() - ultimoDato >= tiempmax) {
+  // --- Control de pérdida de comunicación ---
+  if (millis() - ultimoDato >= tiempomax) {
     digitalWrite(led3, HIGH);
-    tone(buzcom, 2000);
-    delay(2000);
+    tone(buzz, 2000);
+    delay(1000);
     digitalWrite(led3, LOW);
-    noTone(buzcom);
-    ultimoDato = millis();  // Reinicia el contador 
+    noTone(buzz);
+    ultimoDato = millis();
   }
 }
