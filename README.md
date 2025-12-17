@@ -29,7 +29,7 @@ Simulación de control térmico mediante un mini ventilador DC:
 
 ### 3. Panel de Control de Órbita e Interfaz 3D
 Se ha desarrollado una interfaz gráfica avanzada que incluye:
-* **Simulación:** Representación 3D de la órbita y vista 3D complementaria.
+* **Simulación:** Representación de la órbita y vista 3D complementaria.
 * **Gráficas y Telemetría:** Indicadores de velocidad, nivel de combustible y Ground Track.
 * **Control de Velocidad:** Ajustable mediante un control deslizante en la interfaz o a través de un potenciómetro físico en la estación de tierra.
 * **Seguridad Orbital:** Si la velocidad excede los límites, el sistema activa alertas visuales (LED rojo) y sonoras (Buzzer). En caso de pérdida de órbita, se simula una pérdida total de comunicaciones.
